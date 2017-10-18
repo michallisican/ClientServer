@@ -86,9 +86,6 @@ int main(int argc, char *argv[])
       if(su.InitServerAndReceiveFile("", 5555, "filelist.txt") == 0)
       {
         SLEEP(3);
-        /*
-         * ADD PROCESSING BLOCK HERE;
-         */
 
         fo.ParseInputFile("filelist.txt");
         IP = fo.GetRetIP();
@@ -107,7 +104,7 @@ int main(int argc, char *argv[])
         }
         else
           Log( "PORT: " + fo.GetPort(), normal);
-/*
+
         fi = fo.GetFiles();
 #ifndef _WIN32
         ClientUnix cu(server);
@@ -118,7 +115,7 @@ int main(int argc, char *argv[])
           if(i > 30)
             break;
           else
-            SLEEP(1);*/
+            SLEEP(1);
       }
       SLEEP(1);
     }
