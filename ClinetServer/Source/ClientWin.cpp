@@ -9,6 +9,7 @@
 #include <QHostAddress>
 #include <QAbstractSocket>
 #include <QNetworkInterface>
+#include "Log.h"
 
 ClientWin::ClientWin()
 {
@@ -27,7 +28,7 @@ int ClientWin::InitClientAndSendFile(std::string ip, int port, std::string file_
   foreach (const QHostAddress &address, QNetworkInterface::allAddresses()) {
       if (address.protocol() == QAbstractSocket::IPv4Protocol && address != QHostAddress(QHostAddress::LocalHost))
       {
-        qDebug() << address.toString();
+        Log("IP: " + address.toString().toStdString(), normal);
         local_ip = address.toString();
         break;
       }
@@ -38,7 +39,7 @@ int ClientWin::InitClientAndSendFile(std::string ip, int port, std::string file_
   if(socket->waitForConnected(1000))
   {
     FileOperations fo;
-    qDebug() << "Connected!";
+    Log("Connected!", normal);
     QFile file(QString::fromStdString(fo.CurrentWorkingDirectory() + "\\" + file_list));   //file path
     if (file.open(QIODevice::WriteOnly | QIODevice::Append))
     {
@@ -63,7 +64,7 @@ int ClientWin::InitClientAndSendFile(std::string ip, int port, std::string file_
   }
   else
   {
-      qDebug() << "Not connected!";
+      Log("Not Connected!", warning);
       //delete socket;
       return -1;
   }
@@ -77,7 +78,7 @@ int ClientWin::SendFile(std::string file_name)
   FileOperations fo;
   int file_size = fo.GetFileSize(fo.CurrentWorkingDirectory() + "\\" + file_name);
 
-  std::cout << "Total File size: " << file_size << std::endl;
+  Log("Total File size: " + Log::ItoS(file_size), warning);
   if(file_size <= 0)
     return 0;
 
@@ -87,7 +88,7 @@ int ClientWin::SendFile(std::string file_name)
   if(socket->bytesAvailable())
   {
     QByteArray b = socket->readAll();
-    qDebug(b);
+    //qDebug(b);
   }
 
   QFile file(QString::fromStdString(file_name));   //file path
@@ -95,7 +96,7 @@ int ClientWin::SendFile(std::string file_name)
   while (!file.atEnd())
   {
     int readed = file.read(buffer, sizeof(buffer));
-    std::cout << "readed: " << readed << std::endl;
+    Log("Writed: " + Log::ItoS(readed), warning);
     socket->write(buffer, readed);
     while(socket->waitForBytesWritten(1000))
     {

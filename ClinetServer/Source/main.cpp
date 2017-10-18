@@ -17,17 +17,43 @@
 #endif
 #include "FileOperations.h"
 
+static void show_usage(std::string name)
+{
+    std::cerr << "\n\n\nUsage: " << name << " <option(s)> FILE_LIST\n"
+              << "Options:\n"
+              << "\t-h,--help\t\tShow this help message\n"
+              << "\t-s,--server\tServer option\n"
+              << "\t-c,--client\tClient option. Next must be a path to FILE_LIST\n"
+              << "FILE_LIST sintax:\n"
+              << "\t[IP]=...\tIP address of server\n"
+              << "\t[PORT]=...\tPORT port of server\n"
+              << "\t[FILE]=...\tIP file what will be send\n"
+              << std::endl;
+}
 
 int main(int argc, char *argv[])
 {
+  Log( "Program started", normal);
+  if (argc == 2 && (((std::string)argv[1]).compare("-s") == 0 || ((std::string)argv[1]).compare("--server") == 0))
+  {
+    Log( "Program started as SERVER", normal);
+  }
+  else if(argc == 3 && (((std::string)argv[1]).compare("-c") == 0 || ((std::string)argv[1]).compare("--client") == 0))
+  {
+    Log( "Program started as CLIENT", normal);
+  }
+  else
+  {
+    show_usage(argv[0]);
+    return 1;
+  }
+
   Log( "Program started", normal);
   std::string IP;
   int PORT;
   std::vector<FileInfo> fi;
   FileOperations fo;
-  std::string CS = argv[1];
-
-  if(CS.compare("-c") == 0)
+  if(((std::string)argv[1]).compare("-c") == 0 || ((std::string)argv[1]).compare("--client") == 0)
   {
     fo.ParseInputFile(argv[2]);
     IP = fo.GetIP();

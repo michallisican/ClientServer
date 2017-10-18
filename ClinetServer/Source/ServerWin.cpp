@@ -24,26 +24,23 @@ int ServerWin::InitServerAndReceiveFile(std::string ip, int port, std::string fi
   Log( "InitServerAndReceiveFile START", normal);
 
   if(!_tcpServer->listen(QHostAddress::Any, port))
-  {
-      qDebug() << "Server could not start";
-  }
+      Log( "Server could not start", error);
   else
-  {
-      qDebug() << "Server started!";
-  }
+      Log( "Server started!", normal);
 
-  if (_tcpServer->waitForNewConnection(10000))//_tcpServer->hasPendingConnections())
+
+  if (_tcpServer->waitForNewConnection(30000))
   {
       if(_tcpServer->hasPendingConnections())
       {
-        Log( "_tcpServer->hasPendingConnections", normal);
+        Log( "Server has pending connections", normal);
         _clientConnection = _tcpServer->nextPendingConnection();
       }
       else
       {
           _clientConnection->close();
           _tcpServer->close();
-          Log( "Server has not PendingConnections", normal);
+          Log( "Server has not pending connections", warning);
           return -1;
       }
 
@@ -65,21 +62,21 @@ int ServerWin::InitServerAndReceiveFile(std::string ip, int port, std::string fi
      }
      if(fn.length() > 0)
      {
-       Log( "--------START: " + fn + "----------------" , special);
+       Log( "--------START: " + fn + " ----------------" , special);
        while(ReceiveFile(fn)==2)
        {
          //Log("Program started");
-         //Log( Log::ItoS(i) + " " + fn , warning);
+         Log( Log::ItoS(i) + " " + fn , warning);
          Log( "Read file size failed try it again", warning);
        }
-       Log( "--------END: " + fn + "----------------" , special);
+       Log( "--------END: " + fn + " ----------------" , special);
      }
     }
     _clientConnection->close();
   }
   else
   {
-    Log( "_tcpServer has not pending connections", normal);
+    Log( "Server has not pending connections", warning);
     _tcpServer->close();
     return -1;
   }
@@ -96,37 +93,53 @@ int ServerWin::ReceiveFile(std::string name)
   int readed = 0;
   if(_clientConnection != NULL)
   {
-    Log( "_clientConnection != NULL", normal);
+    Log( "Client has connection", normal);
 
-    char buffer[90240];
+    char buffer[90241];
     _clientConnection->waitForReadyRead(10000);
     while (_clientConnection->bytesAvailable())
         readed = _clientConnection->read((char*) &size, sizeof(buffer));
-    qDebug() << "size " << size;
-    qDebug() << "readed " << readed;
+
+    Log( "Readed from connection: " + Log::ItoS(readed), normal);
+    Log( "File size: " + Log::ItoS(size), normal);
+
     if(size == 0 || readed == 0)
     {
-      Log("File is empty\n", normal);
+      Log("File is empty\n", error);
       return -1;
     }
 
-    _clientConnection->write("Got1");
+    _clientConnection->write("G");
     _clientConnection->waitForBytesWritten(1000);
 
     _clientConnection->waitForReadyRead(10000);
+
     QFile file( QString (name.c_str()));
     if (!file.open(QIODevice::WriteOnly))
-        return -1;
-
-    while (_clientConnection->bytesAvailable())
     {
-        int readed = _clientConnection->read(buffer, sizeof(buffer));
+        Log( "Can not open file " + name, error);
+        return -1;
+    }
+    if(!_clientConnection->bytesAvailable())
+    {
+        Log( "Bytes NOT Available", error);
+        return -1;
+    }
+
+    int readed = 1;
+    int recv_size = 0;
+    while (recv_size < size && readed > 0)
+    {
+        _clientConnection->waitForReadyRead(10000);
+        readed = _clientConnection->read(buffer, sizeof(buffer));
+        Log( "Readed from connection: " + Log::ItoS(readed), normal);
+        recv_size =+ readed;
         file.write(buffer,readed);
     }
     file.close();
   }
   else
-    Log( "_clientConnection == NULL", normal);
+    Log( "_clientConnection == NULL", error);
 
   Log( "ReceiveFile END", normal);
   return 0;
