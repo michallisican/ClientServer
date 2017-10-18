@@ -42,8 +42,8 @@ public:
   ~Log(){}
   static void Write(int line, std::string  file_name, std::string text, int state = normal)
   {
-    std::string s = (std::string)(__DATE__) + ":" + (std::string)(__TIME__) + " [" + file_name.substr (3,file_name.length()) + ":" + ItoS(line) + "] " + text;
-#ifndef _WIN32
+    std::string s = " |" + (std::string)(__DATE__) + ":" + (std::string)(__TIME__) + " [" + file_name.substr (3,file_name.length()) + ":" + ItoS(line) + "] " + text + "| ";
+
     if(state == normal)
       std::cout << BOLD << KGRN << s << RST << RST << std::endl;
     else if(state == warning)
@@ -54,9 +54,6 @@ public:
       std::cout << BOLD << KMAG << s << RST << RST << std::endl;
     else
       std::cout << BOLD << KGRN << s << RST << RST << std::endl;
-#else
-    std::cout << s << std::endl;
-#endif
   }
 
   static std::string ItoS(int i)
@@ -66,8 +63,7 @@ public:
     snprintf(str, 60, "%d", i);
     return str;
 #else
-    //std::cout << s << std::endl;
-    return "";
+    return std::to_string(i);
 #endif
   }
 };
