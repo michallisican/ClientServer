@@ -21,7 +21,7 @@ private:
 public:
   ServerWin(int server_client);
   virtual ~ServerWin();
-  int ReceiveFile(int socket, char * name);
+  int ReceiveFile(std::string name);
   int InitServerAndReceiveFile(std::string ip, int port, std::string file_list);
 };
 
