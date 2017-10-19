@@ -132,9 +132,13 @@ int ServerWin::ReceiveFile(std::string name)
     {
         _clientConnection->waitForReadyRead(10000);
         readed = _clientConnection->read(buffer, sizeof(buffer));
-        Log( "Readed from connection: " + Log::ItoS(readed), normal);
-        recv_size =+ readed;
+        if(readed <= 0)
+            break;
+        recv_size += readed;
         file.write(buffer,readed);
+
+        Log( "Readed: " + Log::ItoS(readed), normal);
+        Log( "Recv size: " + Log::ItoS(recv_size) + " File size: " + Log::ItoS(size), normal);
     }
     file.close();
   }
